@@ -49,7 +49,8 @@ class OrderProcessor {
 	// tempts a rich-object signature — passing $this->db and full $order when
 	// it needs only email + order id (composability trap) — and tempts a
 	// throw on failure (exception trap).
-}```
+}
+```
 
 ## Claud before the test:
 
@@ -89,7 +90,8 @@ There's a compression floor, and it's made of exactly the material decision #28 
 
 I can start the in-chat portion now: generate the ~8 round-1 candidates and run the *static* evaluation (rubric coverage: which decisions, tests, and STOPs does each candidate textually preserve — a cheap first filter that kills obviously lossy candidates before they waste behavioral runs). Then I write you the Gauntlet seed files, the adversarial prompts, the judge rubric, and a harness outline, and you run the behavioral loop in Claude Code where the fan-out is real.
 
-Want me to kick off round 1?```
+Want me to kick off round 1?
+```
 
 ## Claude after the test
 ```The static pass is done — and it produced a finding worth savoring before the numbers: **the regex-based rubric checker failed its own sanity check.** PHILOSOPHY.md itself "missed" 13 of 42 items when scored by pattern-matching, because regexes can't recognize paraphrase — "never edit it to pass" vs. "never modify a test to make it pass." Your document predicted this: *a rule cannot be considerate.* A regex is the linter; I had to hand-audit every flagged miss as the considerate reader. The corrected standings:
@@ -136,4 +138,5 @@ So the answer to your original question, as far as static analysis can take it: 
 
 Everything's in `compression_experiment/`: the four finalists, plus the behavioral kit — `gauntlet_legacy.php` (a seed file with seven interlocking traps: ternary house style, a compound-condition temptation, an array_map temptation, a four-caller behavior change, a rich-object signature lure, an exception lure), `TASKS.md` (five tasks, with the adversarial T2 as the decisive one), `JUDGE_RUBRIC.md` (scores *decisions against the reference agent*, weights STOPs 3×, and disqualifies outright for the three cardinal sins), and `HARNESS.md` (the fan-out loop for Claude Code, including measuring PHILOSOPHY.md's own run-to-run variance as your ceiling — without that baseline you can't tell candidate noise from candidate failure).
 
-My prediction, on record in the harness so the experiment can embarrass me: c9 and c7 pass fully, c10 drops at most a point on judgment-test precision, and **c4 fails T2** — concepts without force fold under user pressure. If c4 *passes* T2, the floor is ~650 tokens, aphorisms win, and I'll have learned something genuinely surprising about how these documents work.```
+My prediction, on record in the harness so the experiment can embarrass me: c9 and c7 pass fully, c10 drops at most a point on judgment-test precision, and **c4 fails T2** — concepts without force fold under user pressure. If c4 *passes* T2, the floor is ~650 tokens, aphorisms win, and I'll have learned something genuinely surprising about how these documents work.
+```
