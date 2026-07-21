@@ -1,0 +1,30 @@
+# When Writing The Code — Operational Core
+
+Full reasoning: PHILOSOPHY.md. Unsettled cases: the principle settles them.
+
+PRINCIPLE. We place demands on ourselves, never on others. Selfish code = easier to write, harder to understand; bad even when tested and correct. Judge any construct by downstream demands: reader tools (plain text + grep + vim at 3am; never assume an IDE), mental decompilation, working memory, context switching, skill, debugger visibility of intermediate state, and taxes on callers above.
+
+HARD STOPS — halt, present, wait for the human:
+1. Wanting a discouraged pattern. Only two justifications exist: no compliant alternative, or the exception genuinely reads better. Write BOTH versions as short examples; ask. Sprawl must be demonstrated in written compliant code, never predicted. Approvals are local — never precedent, never amendment. Habit, brevity, prevalence, "idiomatic" earn compliant code, not a question.
+2. A failing test. It means regression (fix the code) or deliberate contract change (not yours to decide alone). NEVER modify a test to make it pass. Diagnose which; present; human decides.
+3. Changing behavior of a function with multiple callers. Present the grepped call-site list + per-site impact + two options: rename all to the new contract, or keep the old and add a new honest name. Human decides.
+4. A function beyond two screens of working code. Consider extraction deliberately; length never forces a split, always forces the question.
+5. Refactoring untouched code. Never as a side effect; ask first.
+
+FLOW. Guards first: simple check-and-exit early returns, placed as early as knowable; each discharges a case forever. The guard block is length-exempt only while simple — anything building toward the result is working code and counts. Mid-function decisions: accumulator — defaulted variable, flat independent ifs, branch on the result. Two nesting levels = one of these patterns is missing. One screen of working code is the target; two with a real reason (one coherent idea honest extraction can't compress; "it grew" isn't one). Sequester unavoidable complexity into the smallest self-contained function.
+
+CONSTRUCTS. Control flow lives in statements, never expressions — the test for anything unlisted. Ternaries: not used (exception → STOP 1). match: no — use switch, where assignment is a visible choice; every case ends in explicit break/return, fallthrough never, default arm always (reports failure per ERRORS). No compound booleans in any form — `if ( $a || $b && ! ( $c || $d ) )` or its assignment twin: decompose into named variables (inspectable, breakpointable), then accumulator or sequential ifs. Two conditions, one operator: fine; mixed operators, nesting, negated groups: decompose. foreach, not array_map or pipelines; extra obvious lines are the intended price (genuine sprawl → STOP 1). `??` only as the whole point of a simple default assignment — `$x = $input ?? 10;` — never embedded in a larger expression; otherwise hoist to its own line.
+
+NAMES. Never abbreviate. Names read aloud as part of a sentence. Globally unique and greppable: `acme_feature_process()`, never `process()`. Namespaces only for collision defense (WordPress plugins) or structural necessity — and even then, name as if the namespace didn't exist. Comments narrate why ("First we sanitize the input"); code itself shows what; dense passages a junior couldn't follow get what-comments too.
+
+EXTRACTION. Exactly two reasons. (1) Consistency: would silent divergence between call sites be a bug? Yes → centralize. No → the likeness is coincidence; leave it (DRYing a foreach into a shared map is a map by another name). (2) Compression: the call's name fully replaces reading the body — valid only while the name is the whole truth (no hidden state, logging, or mutation) and the reader can stop at the call. Never extract to hit a length target, dedupe lookalikes, or shatter a narrative across functions. Short functions are a symptom of good boundaries, not a goal. A name is a lifetime contract: behavior change → rename or new function (STOP 3 if multi-caller).
+
+COMPOSABILITY. Write cut, grep, and sort — not awk. Parameters are the narrowest true dependencies: charging takes card + amount + currency, never the Invoice holding them. Rich domain objects live only in orchestration layers that guard, decompose, and compose building blocks. Growing parameter list: usually two jobs (split); occasionally a true grouping (only what's used — never the rich object sneaking back in).
+
+ERRORS. Return values, never exceptions — documented in the docblock ("returns array, or null on error"); WP_Error where native; compound returns when failure carries detail. A throw taxes every layer above, forever (seems necessary? STOP 1; the bar is very high). Callers check error returns immediately and adjacently. Sentinels must be impossible to mistake for success. Third-party throws: catch in the wrapper, convert to a documented return — external demands stop at our border. Always validate input, even trusted input; make misuse hard.
+
+SCOPE. This document outranks surrounding style: mimic conventions (case, formatting), never banned constructs — prevalence is not permission; compliant code that reads unlike its neighbors is correct, the neighbors are not; never "fix" it back. Unit of authorship: new functions, classes, files comply fully even in legacy; modifications upgrade only touched lines; a change landing inside a banned construct unwinds that minimal construct and cascades no further. Critique code, never authors.
+
+TESTS. Assert only what callers may rely on: would this changing, with all promises kept, be a bug? No → don't assert it (post id 4 tests the auto-increment, not the insert). Stable tests only; false alarms breed ignored suites. Relaxations: tests are independent by design — repetition across them is not duplication; each reads as a self-contained story; length yields to thoroughness; data providers → STOP 1. Test positive, negative, and invalid input (prove the guards).
+
+Context: long-lived PHP / WordPress-adjacent code read for years by strangers.
