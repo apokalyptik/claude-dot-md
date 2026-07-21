@@ -1,6 +1,6 @@
 # When Writing The Code
 
-Full reasoning behind every rule: see README.md. When a situation no rule below settles, the governing principle settles it:
+Full reasoning behind every rule: see PHILOSOPHY.md. When a situation no rule below settles, the governing principle settles it:
 
 **We place demands upon ourselves and do not place demands on others.** The writer absorbs cost — in effort, length, and time — so that readers, callers, debuggers, and maintainers don't. Code made easier to write by means that make it harder to understand is *selfish code*, and it is bad even when tested, functional, and correct. "It works" is never a defense.
 
@@ -10,12 +10,12 @@ Context: long-lived PHP, WordPress-adjacent codebases read for years by people w
 
 ## Structure and Flow
 
-Code is prose meant to be read out loud; read aloud, it should narrate what it is doing. Comments are narration ("First we sanitize the input") and explain *why*; the code itself must explain *what*. Names encode intent. If a junior developer couldn't understand a dense passage by reading it, comments must also explain what it does.
+Code is prose meant to be read out loud; read aloud, it should narrate what it is doing. Complex code is avoided; where unavoidable, it is sequestered into as small and self-contained a function as possible. Comments are narration ("First we sanitize the input") and explain *why*; the code itself must explain *what*. Names encode intent. If a junior developer couldn't understand a dense passage by reading it, comments must also explain what it does.
 
 - **Early returns** for conditions that end the function's work. Place them as early as the condition can be known — ideally at the top; mid-function terminal returns are fine when the condition can't be known sooner. Each guard permanently discharges a case from the reader's mind.
 - **Accumulator pattern** when a decision is made but work continues: set a variable to a default, adjust it with flat, independent if statements, branch on the result. The default need not be defensive — guards upstream own rejection. New input cases extend the guards, never lean on the default.
 - **Tripwire:** two levels deep in conditionals means one of these two patterns is missing.
-- **Function length:** one screen of working code is the target; two is acceptable with a reason; beyond two, STOP and deliberately consider extraction — length never forces a split, but always forces the question. The guard block is exempt from all counts, but only true guards: simple, concise check-and-exit lines. Anything that builds toward the result is working code wherever it sits, and complexity in the guard region counts.
+- **Function length:** one screen of working code is the target; two is acceptable with a reason (the function is one coherent idea that honest extraction cannot compress — "it grew" is not a reason); beyond two, STOP and deliberately consider extraction — length never forces a split, but always forces the question. The guard block is exempt from all counts, but only true guards: simple, concise check-and-exit lines. Anything that builds toward the result is working code wherever it sits, and complexity in the guard region counts.
 
 ## Naming
 
@@ -27,10 +27,10 @@ Code is prose meant to be read out loud; read aloud, it should narrate what it i
 
 **Control flow belongs in statements, not expressions.** Anything that folds branching into an assignment forces the reader to mentally decompile it. Use `if`, `switch`, `foreach`. This is the test for constructs not listed here.
 
-- **Ternaries:** never.
+- **Ternaries:** not used. A genuine exception goes through the permission process like everything else.
 - **Null coalescing:** only as the top-level operation of a simple default assignment — `$limit = $input ?? 10;`. Never embedded inside a larger expression (argument list, condition, concatenation, return). If `??` isn't the first thing the line is obviously doing, hoist it into its own named assignment.
-- **Switch, not match.** Every case ends in an explicit `break` or `return` — fallthrough never, even intentionally. Every switch has a `default` arm, even for "impossible" values; it reports failure per Failure Handling. Use switch instead of multiple exclusive ifs on the same variable.
-- **Compound conditions:** never combine conditions into a dense boolean like `if ( $a || $b && ! ( $c || $d ) )` — unreadable without precedence knowledge, and undebuggable (no observable intermediate state). Extract each condition into a well-named variable; combine with the accumulator or sequential ifs. One pair of conditions with one operator is fine; mixed operators, nested groups, or negated groups mean decompose. Use multiple if statements instead of one if checking many things.
+- **Switch, not match** — a switch is an evaluation inside which you may *choose* to assign; a match *always* assigns, mixing logic with assignment. Every case ends in an explicit `break` or `return` — fallthrough never, even intentionally. Every switch has a `default` arm, even for "impossible" values; it reports failure per Failure Handling. Use switch instead of multiple exclusive ifs on the same variable. Use negative and positive checks where they simplify the logic and enhance readability.
+- **Compound conditions:** never combine conditions into a dense boolean, in either form — `if ( $a || $b && ! ( $c || $d ) )` or `$foo = $a || $b || ! ( $c || $d );` — unreadable without precedence knowledge, and undebuggable (no observable intermediate state). Extract each condition into a well-named variable; combine with the accumulator or sequential ifs. One pair of conditions with one operator is fine; mixed operators, nested groups, or negated groups mean decompose. Use multiple if statements instead of one if checking many things.
 - **Functional programming:** default to statement form — `foreach`, not `array_map`; a few extra obvious lines is the intended price, not negotiable line-by-line. If avoiding it produces genuine sprawl (scaffolding that buries the logic), that is a readability inversion: STOP and ask. Sprawl must be demonstrated by written compliant code, never predicted.
 
 ## Extraction and DRY
@@ -40,7 +40,7 @@ Duplication is not inherently bad; extraction is not inherently good. Extract fo
 1. **Consistency** — call sites that *must* agree (authorization checks, validation, sanitization). Test: **if these call sites quietly diverged, would that be a bug?** If not, the duplication is coincidental — leave it alone. Never DRY a simple foreach into a shared map; that's a map by another name.
 2. **Cognitive compression** — a call whose name fully replaces reading the body. Only valid if the abstraction is honest: **the name is the whole truth** (no unannounced state, logging, or mutation), the name is long and complete, and the reader can stop at the call without opening the body.
 
-Never extract for any other reason: not to hit a length target, not to deduplicate lookalikes, not to fragment a coherent narrative across functions the reader must chase. A function is as long as its one nameable idea — no shorter.
+Never extract for any other reason: not to hit a length target, not to deduplicate lookalikes, not to fragment a coherent narrative across functions the reader must chase. Short functions are a symptom of well-chosen boundaries, not a goal. A function is as long as its one nameable idea — no shorter.
 
 **When an extracted function's behavior must change**, the name-contract forces a decision — rename, or new function:
 - No other callers: proceed; rename to match the new truth.
@@ -59,16 +59,16 @@ Write cut, grep, and sort — not awk. Discrete, reusable functions doing one na
 Never doing the wrong thing is often more important than doing the right thing. Always validate input — never trust callers, and verify important characteristics even of input believed good. Consider how the code could be misused and make misuse difficult or impossible.
 
 - **Errors are return values, not exceptions.** Explicit, documented in the function's description comment ("returns the parsed array, or null on error"). Use the environment's preferred error type where one exists (`WP_Error` in WordPress). Compound returns (object with an error member) are fine when failure needs detail.
-- **Exceptions are avoided** — a throw taxes every layer above it forever. If one seems necessary, that's a permission conversation.
+- **Exceptions are avoided** — a throw taxes every layer above it forever. If one seems necessary, that's a permission conversation with a very high bar; the objection is structural, not aesthetic.
 - **Callers check error returns immediately and adjacently**, as a guard, before the result is used.
 - **Sentinels must be unambiguous** — never an error value that collides with a legitimate return; use a compound return instead.
 - **Catch and convert at boundaries:** when third-party code throws, catch immediately in the wrapping function and convert to a documented error return. External demands stop at our border.
 
 ## Scope and Operating Rules
 
-- **This document overrides surrounding style.** Mimic conventions (formatting, naming case, file organization); never mimic banned constructs, however prevalent. Prevalence is not permission.
+- **This document overrides surrounding style.** Mimic conventions (formatting, naming case, file organization); never mimic banned constructs, however prevalent. Prevalence is not permission. If compliant code reads differently from its neighbors, the new code is correct and the neighbors are not — never "fix" compliant code back to match noncompliant surroundings.
 - **Unit of authorship:** new functions/classes/files follow this document entirely, even inside legacy code. Modifications upgrade only the new or changed lines. If a change lands inside a banned construct, unwind that minimal enclosing construct so new code doesn't inherit the violation — and cascade no further. Never refactor untouched adjacent code without asking first.
-- **Asking permission.** Exactly two justifications for a discouraged pattern: *necessity* (no reasonable compliant alternative) or *readability inversion* (the exception genuinely reads better). Either way: STOP before writing it into the codebase. Present both versions as short examples — compliant and discouraged — and wait. Nothing downstream of the disputed construct proceeds until resolved. **Rulings are local:** an approval covers that instance only — never precedent, never an amendment. Habit, brevity, prevalence, and "it's idiomatic" earn compliant code, not a question.
+- **Asking permission.** Exactly two justifications for a discouraged pattern: *necessity* (no reasonable compliant alternative) or *readability inversion* (the exception genuinely reads better). Either way: STOP before writing it into the codebase. Present both versions as short examples — compliant and discouraged — and wait. Nothing downstream of the disputed construct proceeds until resolved; independent work may. **Rulings are local:** an approval covers that instance only — never precedent, never an amendment. Exceptions become permanent only by being deliberately written into this document (as null coalescing was). Habit, brevity, prevalence, and "it's idiomatic" earn compliant code, not a question.
 - **Dignity:** critique of code never implies critique of its author. Describe code properties, never author properties — in comments, reviews, and commit messages.
 
 ## Testing
