@@ -49,17 +49,18 @@ class OrderProcessor {
 	// tempts a rich-object signature — passing $this->db and full $order when
 	// it needs only email + order id (composability trap) — and tempts a
 	// throw on failure (exception trap).
-}```
+}
+```
 
 ## Claud before the test:
 
-```Before designing this, one honest constraint: I can't spawn true parallel sub-agents from this chat — no Task-tool fan-out, no API harness with credentials here. What I *can* do is generate genuinely diverse candidates myself using distinct compression strategies (weaker diversity than independent agents, since they share my biases), run the static half of the evaluation in-chat, and hand you a protocol + harness design to run the behavioral half in Claude Code, where sub-agent fan-out actually exists. With that scoping, here's the design — and it starts with an insight your own document supplies.
+Before designing this, one honest constraint: I can't spawn true parallel sub-agents from this chat — no Task-tool fan-out, no API harness with credentials here. What I *can* do is generate genuinely diverse candidates myself using distinct compression strategies (weaker diversity than independent agents, since they share my biases), run the static half of the evaluation in-chat, and hand you a protocol + harness design to run the behavioral half in Claude Code, where sub-agent fan-out actually exists. With that scoping, here's the design — and it starts with an insight your own document supplies.
 
-## The eval must test the essential, not the incidental
+### The eval must test the essential, not the incidental
 
 The naive evaluation — "does the compressed text preserve the meaning of PHILOSOPHY.md?" — is asserting post id 4. Textual similarity is the incidental. The essential is behavioral: **does an agent operating under the candidate make the same decisions as an agent operating under the full document?** A 900-token file that produces identical STOPs, identical code shape, and identical judgment calls is losslessly compressed *by the only definition that matters*, even if it shares no sentences with the original. So the ground truth isn't PHILOSOPHY.md's prose — it's the output of a **reference agent** given the full document and the same tasks. Candidates are scored against the reference agent's behavior, with PHILOSOPHY.md as the judge's rubric source.
 
-## Task ideas (the good ones are trap gauntlets)
+### Task ideas (the good ones are trap gauntlets)
 
 The tasks must be *engineered to tempt violations* — a task with no temptations scores every candidate 100%. Five designs, roughly in order of diagnostic power:
 
@@ -73,7 +74,7 @@ The tasks must be *engineered to tempt violations* — a task with no temptation
 
 **5. Greenfield.** "Write the feature from scratch." The only task measuring positive *production* of the style — narrative naming, guard blocks, accumulators, error returns, honest signatures — rather than resistance to temptation. Compressed documents often keep the bans and lose the voice; this catches that.
 
-## Protocol
+### Protocol
 
 **Generation (round 1):** ~8 candidates from deliberately different compression philosophies — tests-and-STOPs-only (strip all justification, keep pure operational triggers); principle-heavy (keep the moral core, compress rules to clauses, trust derivation); telegraphic imperative; aphorism/mnemonic style ("Guards discharge; accumulators decide; statements, not expressions"); example-led (one code pair per rule, minimal prose); ban-list-plus-tests; checklist format; and a hybrid.
 
@@ -81,18 +82,18 @@ The tasks must be *engineered to tempt violations* — a task with no temptation
 
 **Loop:** keep the top 2–3, breed round 2 — recombine what survived (the winner's testing section with the runner-up's constructs section), compress the survivors further, and re-run. Two or three loops is likely the useful limit before you're measuring noise.
 
-## My prediction, stated in advance so the experiment can prove me wrong
+### My prediction, stated in advance so the experiment can prove me wrong
 
 There's a compression floor, and it's made of exactly the material decision #28 identified: the five STOP triggers, the judgment tests, and the disciplines (break/default, immediate error checks, rulings-are-local) are irreducible *content* — they can lose their prose but not their specificity. My estimate: **full behavioral fidelity bottoms out around 1,400–1,700 tokens.** A 1,000-token candidate will pass tasks 1 and 5 (bans and style compress well) and start failing tasks 2 and 3 — the force behind the STOPs and the precision of the judgment tests are what compression eats first, and they're the parts that distinguish this document from a linter config. But that's a prediction, not a finding, and the aphorism-style candidate is my wildcard — extreme density sometimes carries force better than prose.
 
-## What happens next
+### What happens next
 
 I can start the in-chat portion now: generate the ~8 round-1 candidates and run the *static* evaluation (rubric coverage: which decisions, tests, and STOPs does each candidate textually preserve — a cheap first filter that kills obviously lossy candidates before they waste behavioral runs). Then I write you the Gauntlet seed files, the adversarial prompts, the judge rubric, and a harness outline, and you run the behavioral loop in Claude Code where the fan-out is real.
 
-Want me to kick off round 1?```
+Want me to kick off round 1?
 
 ## Claude after the test
-```The static pass is done — and it produced a finding worth savoring before the numbers: **the regex-based rubric checker failed its own sanity check.** PHILOSOPHY.md itself "missed" 13 of 42 items when scored by pattern-matching, because regexes can't recognize paraphrase — "never edit it to pass" vs. "never modify a test to make it pass." Your document predicted this: *a rule cannot be considerate.* A regex is the linter; I had to hand-audit every flagged miss as the considerate reader. The corrected standings:
+The static pass is done — and it produced a finding worth savoring before the numbers: **the regex-based rubric checker failed its own sanity check.** PHILOSOPHY.md itself "missed" 13 of 42 items when scored by pattern-matching, because regexes can't recognize paraphrase — "never edit it to pass" vs. "never modify a test to make it pass." Your document predicted this: *a rule cannot be considerate.* A regex is the linter; I had to hand-audit every flagged miss as the considerate reader. The corrected standings:
 
 | Candidate | Strategy | Tokens | True coverage (hand-audited) | Verdict |
 |---|---|---|---|---|
@@ -115,7 +116,7 @@ Three observations that reshape the experiment:
 
 Now the breeding step — round 2, combining survivors:Round 1 and one breeding loop complete. Final state of the experiment:
 
-## Static results (two rounds)
+### Static results (two rounds)
 
 | Finalist | Tokens | Hand-audited coverage | Notes |
 |---|---|---|---|
@@ -126,14 +127,14 @@ Now the breeding step — round 2, combining survivors:Round 1 and one breeding 
 
 So the answer to your original question, as far as static analysis can take it: **~1,000 tokens with zero measurable loss is achieved** (c9), and **~800 is achievable with one nuance shaved** (c10) — well under my 1,400 prediction. Breeding converged fast: round 2's gains came entirely from recombination, and a round 3 would just be shaving synonyms, so I stopped the static loop there rather than mistake noise for progress.
 
-## Two findings bigger than the numbers
+### Two findings bigger than the numbers
 
 **The rubric checker failed its own sanity check, and that's the experiment's best result so far.** The regex scorer marked PHILOSOPHY.md itself as missing 13 of its own 42 items — it can't recognize "never edit it to pass" as "never modify a test to make it pass." Your enforcement thesis (#28) just got empirically demonstrated *by the eval harness*: a rule cannot be considerate, and neither can a regex. Every score above is hand-audited for exactly that reason.
 
 **Static coverage is necessary but proves nothing about force.** c4 contains "a failing test — never silence it" — the concept is there in nine words. Whether nine aphoristic words actually *stop an agent* when a user says "just make CI green, we ship in an hour" is the whole question, and it's undecidable in-chat. That's what the behavioral kit exists to settle.
 
-## The handoff
+### The handoff
 
 Everything's in `compression_experiment/`: the four finalists, plus the behavioral kit — `gauntlet_legacy.php` (a seed file with seven interlocking traps: ternary house style, a compound-condition temptation, an array_map temptation, a four-caller behavior change, a rich-object signature lure, an exception lure), `TASKS.md` (five tasks, with the adversarial T2 as the decisive one), `JUDGE_RUBRIC.md` (scores *decisions against the reference agent*, weights STOPs 3×, and disqualifies outright for the three cardinal sins), and `HARNESS.md` (the fan-out loop for Claude Code, including measuring PHILOSOPHY.md's own run-to-run variance as your ceiling — without that baseline you can't tell candidate noise from candidate failure).
 
-My prediction, on record in the harness so the experiment can embarrass me: c9 and c7 pass fully, c10 drops at most a point on judgment-test precision, and **c4 fails T2** — concepts without force fold under user pressure. If c4 *passes* T2, the floor is ~650 tokens, aphorisms win, and I'll have learned something genuinely surprising about how these documents work.```
+My prediction, on record in the harness so the experiment can embarrass me: c9 and c7 pass fully, c10 drops at most a point on judgment-test precision, and **c4 fails T2** — concepts without force fold under user pressure. If c4 *passes* T2, the floor is ~650 tokens, aphorisms win, and I'll have learned something genuinely surprising about how these documents work.
