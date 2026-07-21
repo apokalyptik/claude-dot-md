@@ -1,6 +1,6 @@
 # When Writing The Code
 
-Full reasoning behind every rule: see PHILOSOPHY.md. When a situation no rule below settles, the governing principle settles it:
+Full reasoning behind every rule: see README.md. When a situation no rule below settles, the governing principle settles it:
 
 **We place demands upon ourselves and do not place demands on others.** The writer absorbs cost — in effort, length, and time — so that readers, callers, debuggers, and maintainers don't. Code made easier to write by means that make it harder to understand is *selfish code*, and it is bad even when tested, functional, and correct. "It works" is never a defense.
 
