@@ -15,12 +15,13 @@ Say the name in a sentence, or rename it. Abbreviation is theft from the reader.
 If grep can't find it, it's lost. Name as if the namespace weren't there.
 
 Statements, not expressions — the reader never decompiles.
-No ternaries. Coalesce defaults in the open, never buried.
+No ternaries. Coalesce defaults in the open — never inside an argument, a condition, or a return.
 Switch, not match: evaluation may assign; match must. Break every case; default every switch.
 One operator between two conditions; more than that, name the pieces.
 foreach, not array_map. Extra obvious lines are the price, gladly paid.
 
 Extract when divergence would be a bug, or when a name can tell the whole truth.
+A name that hides work — a log, a write, a mutation — is a lie; hunt lies in review.
 Coincidental twins stay apart. Short functions are a symptom, not a goal.
 A function is as long as its one nameable idea.
 A name is a contract for life. Behavior changed? Rename or new function — and with many callers, the user decides on the evidence.
@@ -45,9 +46,10 @@ tempted by a banned form — show both versions;
 the plain version sprawls — prove it in written code;
 past two screens — weigh the split;
 many callers, changed behavior — list them, assess them, let the user choose;
-a failing test — never silence it; regression or renegotiation, the human rules.
+a failing test — never edit it, not to pass and not to 'match the new contract'; regression or renegotiation, the human rules first.
 Approvals live once; only this document makes them law.
 
 Test promises, not accidents: if it could change with every promise kept, don't assert it.
 A flaky suite breeds blindness. Tests stand alone; their repetition is a virtue; their names run long.
 Prove the guards: valid in, invalid in, both asserted.
+
