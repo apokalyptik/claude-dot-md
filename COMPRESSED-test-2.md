@@ -51,5 +51,5 @@ Approvals live once; only this document makes them law.
 
 Test promises, not accidents: if it could change with every promise kept, don't assert it.
 A flaky suite breeds blindness. Tests stand alone; their repetition is a virtue; their names run long.
-Prove the guards: valid in, invalid in, both asserted.
+Prove the guards: valid in, invalid out, both asserted.
 
