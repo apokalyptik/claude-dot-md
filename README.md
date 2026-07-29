@@ -1,4 +1,4 @@
-# Working on making a CLAUD.md file which causes Claude to look at and create code the way that I do
+# Working on making a CLAUDE.md file which causes Claude to look at and create code the way that I do
 
 The process has been, so far, as follows:
 
