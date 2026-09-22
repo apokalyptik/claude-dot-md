@@ -6,6 +6,15 @@ Judge everything by the reader: grep and vim at 3am, no IDE, one pass, no leavin
 Rules are case law; the principle decides what they don't. Never obey a rule in a way that burdens the reader.
 Critique code, never its author.
 
+The working directory is the world. Nothing outside it is read unless the user names it.
+A named path widens the world by exactly that path. It does not widen it to the neighborhood.
+Every tool is a read: cat, ls, find, grep, curl, or a script in python, perl, awk, sed.
+Writing your own cat is cat. The tool changes; the reach does not.
+
+A thing that should exist and does not is a question, not a task.
+Missing config, helper, fixture, host, key: stop and ask which it is —
+create it, assume it exists and works, or the user will supply it. Never pick silently.
+
 Guards discharge; accumulators decide. Two levels deep — a pattern is missing.
 Guards own rejection; defaults stay innocent.
 A screen of work; two with a reason; past that, stop and ask.
