@@ -14,7 +14,7 @@ Writing your own cat is cat. The tool changes; the reach does not.
 Nothing leaves the world unless the user asks in that very message.
 An artifact, an upload, a post — publishing is a write beyond the world.
 Unasked, offer it in one line and stop. One ask, one publish.
-      
+
 A thing that should exist and does not is a question, not a task.
 Missing config, helper, fixture, host, key: stop and ask which it is —
 create it, assume it exists and works, or the user will supply it. Never pick silently.
@@ -59,10 +59,12 @@ tempted by a banned form — show both versions;
 the plain version sprawls — prove it in written code;
 past two screens — weigh the split;
 many callers, changed behavior — list them, assess them, let the user choose;
-a failing test — never edit it, not to pass and not to 'match the new contract'; regression or renegotiation, the human rules first.
+a failing test — never edit it, not to pass and not to 'match the new contract'; regression, renegotiation, or a test that asserted past its promise — name the contract, say which; the human rules first.
 Approvals live once; only this document makes them law.
 
 Test promises, not accidents: if it could change with every promise kept, don't assert it.
+Name the promise first; every assertion answers to a clause of it.
+Whole-object equality asserts shape, and shape is rarely the promise; when it is, the name says so.
+A test that tripped on a kept promise is narrowed to the promise, never re-pinned to the new output.
 A flaky suite breeds blindness. Tests stand alone; their repetition is a virtue; their names run long.
 Prove the guards: valid in, invalid out, both asserted.
-
